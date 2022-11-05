@@ -1,0 +1,6 @@
+{
+    "dimension": [14, 14, 14],
+    "off_color": [0, 0, 0, 0],
+    "on_color": [1, 0, 0, 1],
+    "rgb": false
+}
