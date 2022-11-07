@@ -80,8 +80,8 @@ class LEDCubeView(gl.GLViewWidget):
         self.__led_cube: Optional[Tuple[Tuple[Tuple[LED, ...], ...], ...]] = None
         self.__dimensions: Optional[Tuple[int, int, int]] = None
 
-        self.__default_camera_elevation = 30
-        self.__default_camera_azimuth = -135
+        self.__default_camera_elevation: Union[int, float] = 30
+        self.__default_camera_azimuth: Union[int, float] = -135
         self.__default_camera_pos = None
         self.__default_camera_distance = None
 
@@ -95,15 +95,31 @@ class LEDCubeView(gl.GLViewWidget):
 
     # Properties
     @property
+    def default_camera_azimuth(self) -> Union[int, float]:
+        return self.__default_camera_azimuth
+
+    @default_camera_azimuth.setter
+    def default_camera_azimuth(self, value: Union[int, float]) -> None:
+        self.__default_camera_azimuth = value
+
+    @property
+    def default_camera_elevation(self) -> Union[int, float]:
+        return self.__default_camera_elevation
+
+    @default_camera_elevation.setter
+    def default_camera_elevation(self, value: Union[int, float]) -> None:
+        self.__default_camera_elevation = value
+
+    @property
     def dimensions(self) -> Optional[Tuple[int, int, int]]:
         return self.__dimensions
 
     @property
-    def on_color(self) -> Optional[Tuple[float, float, float, float]]:
+    def on_color(self) -> Tuple[float, float, float, float]:
         return LED.on_color
 
     @property
-    def off_color(self) -> Optional[Tuple[float, float, float, float]]:
+    def off_color(self) -> Tuple[float, float, float, float]:
         return LED.off_color
 
     @property
