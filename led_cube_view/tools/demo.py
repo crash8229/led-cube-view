@@ -73,7 +73,7 @@ class Demo(QMainWindow):
         self.__cube.show_layer(layer)
 
     def __hourglass(self) -> None:
-        states = list()
+        states: list = list()
         x_dim = self.__cube.dimensions[0]
         y_dim = self.__cube.dimensions[1]
         z_dim = self.__cube.dimensions[2]

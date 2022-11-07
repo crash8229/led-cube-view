@@ -5,7 +5,7 @@ from types import MappingProxyType
 from typing import Union, Tuple, Optional, Sequence
 
 import numpy as np
-import pyqtgraph.opengl as gl
+import pyqtgraph.opengl as gl  # type: ignore
 from pyqtgraph import Vector
 from stl import mesh
 
@@ -28,6 +28,10 @@ def rgba_to_rgbaf(
 
 
 # Classes ##############################################################################################################
+class NoCubeLoaded(Exception):
+    pass
+
+
 class LED(gl.GLMeshItem):
     on_color: Tuple[float, float, float, float] = (1, 1, 1, 1)
     off_color: Tuple[float, float, float, float] = (0, 0, 0, 0)
@@ -73,7 +77,7 @@ class LEDCubeView(gl.GLViewWidget):
         a.setSize(3, 3, 3)
         self.addItem(a)
 
-        self.__led_cube: Optional[Tuple[Tuple[Tuple[LED]]]] = None
+        self.__led_cube: Optional[Tuple[Tuple[Tuple[LED, ...], ...], ...]] = None
         self.__dimensions: Optional[Tuple[int, int, int]] = None
 
         self.__default_camera_elevation = 30
@@ -113,6 +117,9 @@ class LEDCubeView(gl.GLViewWidget):
 
         LED.off_visible = visible
 
+        if self.__led_cube is None:
+            return
+
         # Cycle through cube applying the new setting
         for z in self.__led_cube:
             for x in z:
@@ -120,7 +127,10 @@ class LEDCubeView(gl.GLViewWidget):
                     None if led.is_on else led.setVisible(visible)
 
     @property
-    def state_matrix(self) -> Tuple[Tuple[Tuple[bool]]]:
+    def state_matrix(self) -> Tuple[Tuple[Tuple[bool, ...], ...], ...]:
+        if self.__led_cube is None:
+            raise NoCubeLoaded
+
         matrix = list()
         for z in self.__led_cube:
             layer = list()
@@ -185,6 +195,18 @@ class LEDCubeView(gl.GLViewWidget):
         self.__led_cube = None
         self.__dimensions = None
 
+    @staticmethod
+    def __json_dimension_check(value: Sequence) -> Tuple[int, int, int]:
+        if isinstance(value, Sequence) and len(value) == 3 and all([isinstance(dim, int) for dim in value]):
+            return tuple(value)  # type: ignore
+        raise ValueError("Dimension value type is not Tuple[int, int, int]")
+
+    @staticmethod
+    def __json_color_check(value: Sequence) -> Tuple[float, float, float, float]:
+        if isinstance(value, Sequence) and len(value) == 4 and all([isinstance(v, (float, int)) for v in value]):
+            return tuple([float(v) for v in value])  # type: ignore
+        raise ValueError("Color value type is not Tuple[float, float, float, float]")
+
     def load_cube(self, config: Union[str, Path, dict]) -> None:
 
         if isinstance(config, (str, Path)):
@@ -204,9 +226,9 @@ class LEDCubeView(gl.GLViewWidget):
         led_spacing = 5
 
         self.destroy_cube()
-        self.__dimensions = tuple(led_config["dimension"])
-        LED.off_color = tuple(led_config["off_color"])
-        LED.on_color = tuple(led_config["on_color"])
+        self.__dimensions = self.__json_dimension_check(led_config["dimension"])
+        LED.off_color = self.__json_color_check(led_config["off_color"])
+        LED.on_color = self.__json_color_check(led_config["on_color"])
 
         x_scalar = led_spacing
         x_offset = axis_spacing
