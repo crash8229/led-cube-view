@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "led-cube-view"
-version = "1.0.1"
-description = "A PySide6 widget to display a LED cube on a 3D graph and manipulate its LEDs."
+version = "1.1.0"
+description = "A QtPy widget to display a LED cube on a 3D graph and manipulate its LEDs."
 authors = ["crash8229 <mu304007@gmail.com>"]
 license = "GPL-3.0-only"
 readme = "README.md"
@@ -12,14 +12,15 @@ classifiers = ["Development Status :: 4 - Beta"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-PySide6 = {version = "^6.3.1", python = ">=3.10,<3.12"}
 PyOpenGL = "^3.1.6"
-numpy-stl = "^2.17.1"
+numpy-stl = "^3.0.0"
 pyqtgraph = "^0.13.1"
+QtPy = "^2.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
 mypy = "^0.982"
+PySide6 = {version = "^6.3.1", python = ">=3.10,<3.12"}
 
 [build-system]
 requires = ["poetry-core"]

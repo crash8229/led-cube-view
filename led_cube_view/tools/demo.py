@@ -6,8 +6,8 @@ from time import sleep
 from threading import Thread
 
 from pathlib import Path
-from PySide6.QtWidgets import *
-from PySide6.QtCore import Signal
+from qtpy.QtWidgets import *
+from qtpy.QtCore import Signal
 
 
 # Demo #################################################################################################################
