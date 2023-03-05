@@ -7,7 +7,7 @@ from typing import Union, Tuple, Optional, Sequence
 import numpy as np
 import pyqtgraph.opengl as gl  # type: ignore
 from pyqtgraph import Vector
-from stl import mesh
+from stl import mesh  # noqa
 
 
 # Globals ##############################################################################################################
@@ -92,6 +92,11 @@ class LEDCubeView(gl.GLViewWidget):
         self.__led_mesh_data = gl.MeshData(vertexes=points, faces=faces)
 
         self.set_default_camera_position()
+
+    # Static Methods
+    @staticmethod
+    def config_list() -> Tuple[str, ...]:
+        return tuple(CUBE_CONFIGS.copy().keys())
 
     # Properties
     @property
