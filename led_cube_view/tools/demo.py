@@ -38,12 +38,13 @@ class Demo(QMainWindow):
         load_menu = QComboBox(self)
         for config in CUBE_CONFIGS.keys():
             load_menu.addItem(config)
-        load_menu.currentTextChanged.connect(self.__cube.load_cube)
+        load_menu.currentTextChanged.connect(self.__cube.load_cube)  # noqa
         self.__menu_enable.connect(load_menu.setEnabled)
         layout.addWidget(load_menu)
 
         demo_button = QPushButton("Demo", center_widget)
-        demo_button.clicked.connect(self.demo)
+        demo_button.clicked.connect(self.demo)  # noqa
+        self.__menu_enable.connect(demo_button.setEnabled)
         layout.addWidget(demo_button)
 
         self.all_leds.connect(self.__all_leds)
@@ -135,11 +136,43 @@ class Demo(QMainWindow):
         self.off_visible.emit(False)
         sleep(1)
 
-        self.off_visible.emit(True)
-        sleep(1)
+        self.all_leds.emit(False)
+
+        # Draw layers
+        x_dim = self.__cube.dimensions[0]
+        y_dim = self.__cube.dimensions[1]
+        z_dim = self.__cube.dimensions[2]
+        for visible in [True, False]:
+            self.off_visible.emit(visible)
+            sleep(1)
+            for layer in range(z_dim - 2, z_dim):
+                for y in range(y_dim):
+                    for x in range(x_dim):
+                        self.set_led.emit(x, y, layer, True)
+                        sleep(0.01)
+                for y in range(y_dim):
+                    for x in range(x_dim):
+                        self.set_led.emit(x, y, layer, False)
+                        sleep(0.01)
+            sleep(0.1)
+        self.show_layer.emit(z_dim - 1)
+        for visible in [True, False]:
+            self.off_visible.emit(visible)
+            sleep(1)
+            for layer in range(z_dim - 2, z_dim):
+                for y in range(y_dim):
+                    for x in range(x_dim):
+                        self.set_led.emit(x, y, layer, True)
+                        sleep(0.01)
+                for y in range(y_dim):
+                    for x in range(x_dim):
+                        self.set_led.emit(x, y, layer, False)
+                        sleep(0.01)
+            sleep(0.1)
 
         self.all_leds.emit(False)
-        sleep(1)
+        self.cube_visible.emit(True)
+        self.off_visible.emit(True)
 
         self.__menu_enable.emit(True)
         self.__demo_thread = None

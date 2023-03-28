@@ -56,9 +56,12 @@ class LED(gl.GLMeshItem):
         return self.__is_on
 
     def set_state(self, state: bool) -> None:
+        visible = LED.off_visible
         self.setColor(LED.on_color) if state else self.setColor(LED.off_color)
-        self.setVisible(True)
-        None if state or LED.off_visible else self.setVisible(False)
+        if state:
+            self.setVisible(True)
+        elif not state and not visible:
+            self.setVisible(False)
         self.__is_on = state
 
 
@@ -84,6 +87,9 @@ class LEDCubeView(gl.GLViewWidget):
         self.__default_camera_azimuth: Union[int, float] = -135
         self.__default_camera_pos = None
         self.__default_camera_distance = None
+
+        self.__layer_mode: bool = False
+        self.__visible_layer: Optional[int] = None
 
         # Load LED mesh
         m = mesh.Mesh.from_file(str(RESOURCE_PATH.joinpath("led.stl")))
@@ -133,19 +139,21 @@ class LEDCubeView(gl.GLViewWidget):
 
     @off_led_visible.setter
     def off_led_visible(self, visible: bool) -> None:
-        if LED.off_visible == visible:
-            return
-
         LED.off_visible = visible
 
         if self.__led_cube is None:
             return
 
         # Cycle through cube applying the new setting
-        for z in self.__led_cube:
-            for x in z:
+        if self.__layer_mode and self.__visible_layer is not None:
+            for x in self.__led_cube[self.__visible_layer]:
                 for led in x:
                     None if led.is_on else led.setVisible(visible)
+        else:
+            for z in self.__led_cube:
+                for x in z:
+                    for led in x:
+                        None if led.is_on else led.setVisible(visible)
 
     @property
     def state_matrix(self) -> Tuple[Tuple[Tuple[bool, ...], ...], ...]:
@@ -163,6 +171,14 @@ class LEDCubeView(gl.GLViewWidget):
             matrix.append(tuple(layer))
         return tuple(matrix)
 
+    @property
+    def layer_mode(self) -> bool:
+        return self.__layer_mode
+
+    @property
+    def visible_layer(self) -> Optional[int]:
+        return self.__visible_layer
+
     # Methods
     def set_default_camera_position(self) -> None:
         self.setCameraPosition(
@@ -178,6 +194,8 @@ class LEDCubeView(gl.GLViewWidget):
                 for x in z:
                     for led in x:
                         led.setVisible(True)
+            self.__layer_mode = False
+            self.__visible_layer = None
 
     def hide_cube(self):
         if self.__led_cube is not None:
@@ -192,10 +210,15 @@ class LEDCubeView(gl.GLViewWidget):
             for x_slice in self.__led_cube[layer]:
                 for led in x_slice:
                     led.setVisible(True)
+            self.__layer_mode = True
+            self.__visible_layer = layer
 
     def set_led(self, x: int, y: int, z: int, state: bool) -> None:
         if self.__led_cube is not None:
-            self.__led_cube[z][x][y].set_state(state)
+            led: LED = self.__led_cube[z][x][y]
+            led.set_state(state)
+            if self.__layer_mode and z != self.__visible_layer:
+                led.setVisible(False)
 
     def set_layer(self, layer: int, states: Sequence[Sequence[bool]]) -> None:
         if self.__led_cube is not None:
@@ -218,18 +241,25 @@ class LEDCubeView(gl.GLViewWidget):
 
     @staticmethod
     def __json_dimension_check(value: Sequence) -> Tuple[int, int, int]:
-        if isinstance(value, Sequence) and len(value) == 3 and all([isinstance(dim, int) for dim in value]):
+        if (
+            isinstance(value, Sequence)
+            and len(value) == 3
+            and all([isinstance(dim, int) for dim in value])
+        ):
             return tuple(value)  # type: ignore
         raise ValueError("Dimension value type is not Tuple[int, int, int]")
 
     @staticmethod
     def __json_color_check(value: Sequence) -> Tuple[float, float, float, float]:
-        if isinstance(value, Sequence) and len(value) == 4 and all([isinstance(v, (float, int)) for v in value]):
+        if (
+            isinstance(value, Sequence)
+            and len(value) == 4
+            and all([isinstance(v, (float, int)) for v in value])
+        ):
             return tuple([float(v) for v in value])  # type: ignore
         raise ValueError("Color value type is not Tuple[float, float, float, float]")
 
     def load_cube(self, config: Union[str, Path, dict]) -> None:
-
         if isinstance(config, (str, Path)):
             config = Path(config)
             if not config.is_file():
