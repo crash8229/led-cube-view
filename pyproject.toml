@@ -1,27 +1,44 @@
-[tool.poetry]
+[project]
 name = "led-cube-view"
 version = "1.1.2"
 description = "A QtPy widget to display a LED cube on a 3D graph and manipulate its LEDs."
-authors = ["crash8229 <mu304007@gmail.com>"]
-license = "GPL-3.0-only"
+authors = [{ name = "crash8229", email = "mu304007@gmail.com" }]
+requires-python = ">=3.10"
 readme = "README.md"
-packages = [{include = "led_cube_view"}]
-homepage = "https://github.com/crash8229/led-cube-view"
-repository = "https://github.com/crash8229/led-cube-view"
-classifiers = ["Development Status :: 4 - Beta"]
+license = "GPL-3.0-only"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "PyOpenGL>=3.1.6",
+    "numpy-stl>=3.0.0",
+    "pyqtgraph>=0.13.1",
+    "QtPy>=2.3.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-PyOpenGL = "^3.1.6"
-numpy-stl = "^3.0.0"
-pyqtgraph = "^0.13.1"
-QtPy = "^2.3.0"
+[project.urls]
+Homepage = "https://github.com/crash8229/led-cube-view"
+Repository = "https://github.com/crash8229/led-cube-view"
 
-[tool.poetry.group.dev.dependencies]
-black = "^22.8.0"
-mypy = "^0.982"
-PySide6 = {version = "^6.3.1", python = ">=3.10,<3.12"}
+[dependency-groups]
+dev = [
+    "black>=22.8.0",
+    "mypy>=0.982",
+    "PySide6>=6.3.1",
+]
+
+[tool.uv]
+
+[tool.uv.build-backend]
+module-name = ["led_cube_view"]
+module-root = ""
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
